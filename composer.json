@@ -1,0 +1,29 @@
+{
+  "name": "codehit-apps/basicmodel",
+  "homepage": "https://github.com/codehit-apps/basicmodel",
+  "license": "MIT",
+  "description": "Basic PHP Object-relational mapping (ORM)",
+  "authors": [
+    {
+      "name": "Marvin Tangpos",
+      "email": "marvin@codehit.net",
+      "homepage": "https://github.com/tangposmarvin"
+    }
+  ],
+  "require": {
+    "php": ">=5.6"
+  },
+  "autoload": {
+    "psr-4": {
+      "BasicModel\\": "src"
+    }
+  },
+  "autoload-dev": {
+    "psr-4": {
+      "BasicModel\\Tests\\": "test"
+    }
+  },
+  "config": {
+    "sort-packages": true
+  }
+}
