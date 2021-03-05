@@ -1,5 +1,5 @@
 {
-  "name": "codehit-apps/basicmodel",
+  "name": "codehit/basicmodel",
   "homepage": "https://github.com/codehit-apps/basicmodel",
   "license": "MIT",
   "description": "Basic PHP Object-relational mapping (ORM)",

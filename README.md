@@ -6,7 +6,7 @@
 
 The recommended way to install BasicModel is through [Composer](http://getcomposer.org):
 ```
-$ composer require codehit-apps/basicmodel:dev-master
+$ composer require codehit/basicmodel:dev-master
 ```
 
 ### Examples ###
