@@ -9,8 +9,15 @@ abstract class BasicModel extends BasicObject {
   public function __call($name, $args) {
     if (strpos( $name , 'set_' ) === 0) {
       $this->{str_replace('set_', '', $name)} = $args[0];
-    } else if(strpos( $name , 'get_' ) === 0) {
+    } else if (strpos( $name , 'get_' ) === 0) {
       return $this->{str_replace('get_', '', $name)};
+    }
+  }
+
+  public static function __callStatic($name, $args) {
+    if (strpos( $name , 'find_by_' ) === 0) {
+      $where = array(str_replace('find_by_', '', $name) => $args[0]);
+      return self::where($where)[0];
     }
   }
 
@@ -31,6 +38,32 @@ abstract class BasicModel extends BasicObject {
 
   public static function init($conf) {
     foreach ($conf as $key => $val) define($key, $val);
+  }
+
+  public static function where($where) {
+    $con = self::db_conn();
+    $table_name = self::table_name();
+    $where_clause = array();
+    foreach ($where as $key => $val) {
+      array_push($where_clause, "$table_name.$key = '$val'");
+    }
+    $where_clause = implode($where_clause, ' AND ');
+    $query = <<<SQL
+      SELECT * FROM $table_name WHERE $where_clause
+    SQL;
+    $req = mysqli_query($con, $query);
+    $data = array();
+    $klas = get_called_class();
+    while($res = mysqli_fetch_assoc($req)) {
+      $obj = new $klas;
+      foreach ($res as $key => $val) {
+        if (property_exists($obj, $key)) call_user_func([$obj, "set_".$key], $val);
+      }
+      array_push($data, $obj);
+      break;
+    }
+    mysqli_close($con);
+    return $data;
   }
 
   public static function find($id) {
