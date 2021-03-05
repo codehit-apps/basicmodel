@@ -1,6 +1,6 @@
 <?php
 
-namespace BasicModel;
+namespace Codehit\BasicModel;
 
 abstract class BasicModel extends BasicObject {
   protected $primary_key = 'id';

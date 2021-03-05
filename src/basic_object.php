@@ -1,6 +1,6 @@
 <?php
 
-namespace BasicModel;
+namespace Codehit\BasicModel;
 
 abstract class BasicObject {
   public static function underscore($str) {
