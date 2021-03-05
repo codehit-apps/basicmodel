@@ -14,7 +14,7 @@
     "php": ">=5.6"
   },
   "autoload": {
-    "psr-4": {"Codehit\\BasicModel\\": "src/"}
+    "psr-4": {"Codehit\\BasicModel\\": "src"}
   },
   "config": {
     "sort-packages": true
