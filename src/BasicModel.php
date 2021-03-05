@@ -73,7 +73,7 @@ abstract class BasicModel extends BasicObject {
   }
 
   private static function table_name() {
-    return self::pluralize(self::underscore(get_called_class()));
+    return self::pluralize(self::underscore(array_reverse(explode("\\", get_called_class()))[0]));
   }
 
   private static function db_conn() {
