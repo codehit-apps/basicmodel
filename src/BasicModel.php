@@ -21,19 +21,17 @@ abstract class BasicModel extends BasicObject {
     }
   }
 
+  public function is_persisted() {
+    $id = $this->_get_id();
+    return isset($id);
+  }
+
   public function save() {
-    $con = self::db_conn();
-    $table_name = self::table_name();
-    $key_value_pairs = [];
-    foreach (get_object_vars($this) as $key => $val)
-      if ($key != $this->primary_key && $key != 'primary_key' && $key != 'db_name') array_push($key_value_pairs, "$table_name.$key = '$val'");
-    $key_value_pairs = implode($key_value_pairs, ', ');
-    $id = call_user_func([$this, "get_".$this->primary_key]);
-    $query = <<<SQL
-      UPDATE $table_name SET $key_value_pairs WHERE $table_name.$this->primary_key = $id
-    SQL;
-    mysqli_query($con, $query);
-    mysqli_close($con);
+    $this->is_persisted() ? $this->_update() : $this->_create();
+  }
+
+  public function destroy() {
+    if ($this->is_persisted()) $this->_destroy();
   }
 
   public static function init($conf) {
@@ -45,7 +43,7 @@ abstract class BasicModel extends BasicObject {
     $table_name = self::table_name();
     $where_clause = array();
     foreach ($where as $key => $val) {
-      array_push($where_clause, "$table_name.$key = '$val'");
+      array_push($where_clause, "$table_name.$key = '".mysqli_real_escape_string($con, $val)."'");
     }
     $where_clause = implode($where_clause, ' AND ');
     $query = <<<SQL
@@ -115,5 +113,59 @@ abstract class BasicModel extends BasicObject {
     $con = mysqli_connect(DB_HOST, DB_USER, DB_PASS, $db_name);
     if (mysqli_connect_errno()) die("Connect failed: ".mysqli_connect_error());
     return $con;
+  }
+
+  private function _update() {
+    $con = self::db_conn();
+    $table_name = self::table_name();
+    $key_value_pairs = [];
+    foreach (get_object_vars($this) as $key => $val)
+      if ($key != $this->primary_key && $key != 'primary_key' && $key != 'db_name') array_push($key_value_pairs, "$table_name.$key = '".mysqli_real_escape_string($con, $val)."'");
+    $key_value_pairs = implode($key_value_pairs, ', ');
+    $id = $this->_get_id();
+    $query = <<<SQL
+      UPDATE $table_name SET $key_value_pairs WHERE $table_name.$this->primary_key = $id
+    SQL;
+    mysqli_query($con, $query);
+    mysqli_close($con);
+  }
+
+  private function _create() {
+    $con = self::db_conn();
+    $table_name = self::table_name();
+
+    $columns = array();
+    $values = array();
+    foreach (get_object_vars($this) as $key => $val) {
+      if ($key != $this->primary_key && $key != 'primary_key' && $key != 'db_name') {
+        array_push($columns, $key);
+        array_push($values, "'".mysqli_real_escape_string($con, $val)."'");
+      }
+    }
+    $columns = implode($columns, ', ');
+    $values = implode($values, ', ');
+
+    $query = <<<SQL
+      INSERT INTO $table_name ($columns) VALUES ($values);
+    SQL;
+    mysqli_query($con, $query);
+    mysqli_close($con);
+  }
+
+  private function _destroy() {
+    $con = self::db_conn();
+    $table_name = self::table_name();
+    $klas = get_called_class();
+    $primary_key = (new $klas)->primary_key;
+    $id = $this->_get_id();
+    $query = <<<SQL
+      DELETE FROM $table_name WHERE $table_name.$primary_key = $id
+    SQL;
+    mysqli_query($con, $query);
+    mysqli_close($con);
+  }
+
+  private function _get_id() {
+    return call_user_func([$this, "get_".$this->primary_key]);
   }
 }
