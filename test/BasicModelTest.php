@@ -54,4 +54,20 @@ final class BasicModelTest extends TestCase
 
     $this->assertCount(0, Post::all());
   }
+
+  /**
+   * @depends testCreate
+   */
+  public function testCustomTableName(): void
+  {
+    $this->assertCount(0, Book::all());
+
+    $post = new Book;
+    $post->set_title('hello codehit?');
+    $post->set_description('welcome home?');
+    $post->save();
+
+    $this->assertCount(1, Book::all());
+    $this->assertCount(1, Post::all());
+  }
 }

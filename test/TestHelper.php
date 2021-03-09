@@ -39,3 +39,10 @@ class Post extends BasicModel {
   protected $title;
   protected $description;
 }
+
+class Book extends BasicModel {
+  protected $table_name = 'posts';
+  protected $id;
+  protected $title;
+  protected $description;
+}

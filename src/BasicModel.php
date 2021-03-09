@@ -104,6 +104,11 @@ abstract class BasicModel extends BasicObject {
   }
 
   private static function table_name() {
+    $klas = get_called_class();
+    $custom = (new $klas)->table_name;
+    if (isset($custom)) {
+      return $custom;
+    }
     return self::pluralize(self::underscore(array_reverse(explode("\\", get_called_class()))[0]));
   }
 
@@ -120,7 +125,7 @@ abstract class BasicModel extends BasicObject {
     $table_name = self::table_name();
     $key_value_pairs = [];
     foreach (get_object_vars($this) as $key => $val)
-      if ($key != $this->primary_key && $key != 'primary_key' && $key != 'db_name') array_push($key_value_pairs, "$table_name.$key = '".mysqli_real_escape_string($con, $val)."'");
+      if ($this->is_fillable($key)) array_push($key_value_pairs, "$table_name.$key = '".mysqli_real_escape_string($con, $val)."'");
     $key_value_pairs = implode($key_value_pairs, ', ');
     $id = $this->_get_id();
     $query = <<<SQL
@@ -137,7 +142,7 @@ abstract class BasicModel extends BasicObject {
     $columns = array();
     $values = array();
     foreach (get_object_vars($this) as $key => $val) {
-      if ($key != $this->primary_key && $key != 'primary_key' && $key != 'db_name') {
+      if ($this->is_fillable($key)) {
         array_push($columns, $key);
         array_push($values, "'".mysqli_real_escape_string($con, $val)."'");
       }
@@ -167,5 +172,9 @@ abstract class BasicModel extends BasicObject {
 
   private function _get_id() {
     return call_user_func([$this, "get_".$this->primary_key]);
+  }
+
+  private function is_fillable($col) {
+    return !in_array($col, ['table_name', 'primary_key', 'db_name', $this->primary_key]);
   }
 }
